@@ -86,7 +86,6 @@ def save_discover_weekly():
 
     if not discover_weekly_playlist_id:
         # return all_playlists
-        # return f"Discover Weekly Playlist ID: {discover_weekly_playlist_id}"
         return 'Discover Weekly not found.'
 
     # getting the songs from Discover Weekly and adding them to Saved Weekly
@@ -101,6 +100,7 @@ def save_discover_weekly():
             song['track']['name'] + ", " + song['track']['artists'][0]['name'])  # put brackets around the statement in the parenthases to have it be more spaced out on the screen
         # songs_added_this_week.append(song['track']['name'])
 
+    # first wanna check that same songs aren't already in there
     if not song_already_in_playlist(saved_weekly_playlist, song_uris):
         sp.user_playlist_add_tracks(
             user_id, saved_weekly_playlist_id, song_uris, None)
@@ -112,13 +112,6 @@ def save_discover_weekly():
         print("Some or all of these songs were already in the playlist.")
 
     return songs_added_this_week
-
-    # # add them to Saved weekly. But first wanna check that the songs aren't already in there
-    # sp.user_playlist_add_tracks(
-    #     user_id, saved_weekly_playlist_id, song_uris, None)
-    # print("OAUTH Successful")
-    # return (songs_added_this_week)
-    # # return ("Songs were already added this week")
 
 
 def get_token():

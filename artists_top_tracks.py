@@ -5,6 +5,7 @@ from requests import post, get
 import base64
 import json
 
+
 load_dotenv()
 
 client_id = os.getenv("CLIENT_ID")
@@ -49,7 +50,9 @@ def search_for_artist(token, artist_name):
     return json_result[0]
 
 
-def get_songs_by_artists(token, artist_id):
+def get_artists_top_ten_tracks(token, artist_name):
+    artist = search_for_artist(token, artist_name)
+    artist_id = artist['id']
     url = f"https://api.spotify.com/v1/artists/{artist_id}/top-tracks?country=US"
     headers = get_auth_header(token)
     result = get(url, headers=headers)
@@ -57,15 +60,22 @@ def get_songs_by_artists(token, artist_id):
     return json_result
 
 
+def list_artists_top_ten_tracks(songlist):
+    for idx, song in enumerate(songlist):
+        print(f"{idx+1}. {song['name']}")
+
+
 def main():
     token = get_token()
-    result = search_for_artist(token, "Taylor Swift")
-    artist_id = result["id"]
-    songs = get_songs_by_artists(token, artist_id)
-    print(songs)
+    # result = search_for_artist(token, "Taylor Swift")
+    # artist_id = result["id"]
 
-    for idx, song in enumerate(songs):
-        print(f"{idx +1}. {song['name']}")
+    # songs = get_artists_top_ten_tracks(token, artist_id)  # print 'songs' to get all the meta data on the each song
+    songs = get_artists_top_ten_tracks(token, "Cordae")
+    list_artists_top_ten_tracks(songs)
+
+    # for idx, song in enumerate(songs):
+    #     print(f"{idx+1}. {song['name']}")
 
 
 if __name__ == '__main__':
