@@ -11,7 +11,7 @@ client_secret = os.getenv("CLIENT_SECRET_SW")
 
 app = Flask(__name__)
 app.config['SESSION_COOKIE_NAME'] = 'Spotify Cookie'
-app.secret_key = 'asdfqwer1&F&E*^RGF'
+app.secret_key = os.getenv("APP_SECRETKEY")
 TOKEN_INFO = 'token_info'
 
 
@@ -30,7 +30,17 @@ def redirect_page():
     return redirect(url_for('save_discover_weekly', _external=True))
 
 
+def song_already_in_playlist(songs_added_this_week, song_uris):
+    # for each song in saved weekly -> compare it to each song added this week
+    for song in song_uris:
+        if song["track"]["name"] == (songs_added_this_week):
+            return True
+
+    return False
+
 # route to save the Discover Weekly songs to a playlist
+
+
 @app.route('/saveDiscoverWeekly')
 def save_discover_weekly():
     try:
@@ -83,12 +93,16 @@ def save_discover_weekly():
         songs_added_this_week.append(song['track']['name'])
 
     # add them to Saved weekly. But first wanna check that the songs aren't already in there
-    sp.user_playlist_add_tracks(
-        user_id, saved_weekly_playlist_id, song_uris, None)
+    if not (song_already_in_playlist):
+        sp.user_playlist_add_tracks(
+            user_id, saved_weekly_playlist_id, song_uris, None)
+        print("OAUTH Successful")
+        return (songs_added_this_week)
 
-    print("OAUTH Successful")
+    return ("Songs were already added this week")
+    # print("OAUTH Successful")
     # Made it so that it displays the songs that were added for the week.
-    return (songs_added_this_week)
+    # return (songs_added_this_week)
     # return ("OAUTH Successful")
 
 
