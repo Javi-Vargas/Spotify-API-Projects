@@ -8,10 +8,11 @@ import os
 
 client_id = os.getenv("CLIENT_ID_SW")
 client_secret = os.getenv("CLIENT_SECRET_SW")
+app_secretkey = os.getenv("APP_SECRETKEY")
 
 app = Flask(__name__)
 app.config['SESSION_COOKIE_NAME'] = 'Spotify Cookie'
-app.secret_key = os.getenv("APP_SECRETKEY")
+app.secret_key = app_secretkey
 TOKEN_INFO = 'token_info'
 
 
@@ -30,13 +31,17 @@ def redirect_page():
     return redirect(url_for('save_discover_weekly', _external=True))
 
 
-def song_already_in_playlist(songs_added_this_week, song_uris):
-    # for each song in saved weekly -> compare it to each song added this week
-    for song in song_uris:
-        if song["track"]["name"] == (songs_added_this_week):
-            return True
+def song_already_in_playlist(saved_weekly_playlist, song_uris):
+    # Create a set of song URIs for efficient lookup
+    saved_song_uris = {song['track']['uri']
+                       for song in saved_weekly_playlist['items']}
 
-    return False
+    # Check if all song URIs in song_uris are in the saved playlist
+    for uri in song_uris:
+        if uri not in saved_song_uris:
+            return False  # Song not found in playlist
+
+    return True  # All songs found in playlist
 
 # route to save the Discover Weekly songs to a playlist
 
@@ -77,6 +82,7 @@ def save_discover_weekly():
     if not saved_weekly_playlist_id:
         new_playlist = sp.user_playlist_create(user_id, 'Saved Weekly', True)
         saved_weekly_playlist_id = new_playlist['id']
+        print("Had to Create Saved Weekly Playlist")
 
     if not discover_weekly_playlist_id:
         # return all_playlists
@@ -85,6 +91,7 @@ def save_discover_weekly():
 
     # getting the songs from Discover Weekly and adding them to Saved Weekly
     discover_weekly_playlist = sp.playlist_items(discover_weekly_playlist_id)
+    saved_weekly_playlist = sp.playlist_items(saved_weekly_playlist_id)
     song_uris = []
     # get songs from Discover Weekly
     for song in discover_weekly_playlist['items']:
@@ -92,18 +99,20 @@ def save_discover_weekly():
         song_uris.append(song_uri)
         songs_added_this_week.append(song['track']['name'])
 
-    # add them to Saved weekly. But first wanna check that the songs aren't already in there
-    if not (song_already_in_playlist):
+    if not song_already_in_playlist(saved_weekly_playlist, song_uris):
         sp.user_playlist_add_tracks(
             user_id, saved_weekly_playlist_id, song_uris, None)
-        print("OAUTH Successful")
-        return (songs_added_this_week)
-
-    return ("Songs were already added this week")
+        print("This week's songs were added!")
+    else:
+        print("Some or all of these songs were already in the playlist.")
+    print("OAuth Successful")
+    return (songs_added_this_week)
+    # # add them to Saved weekly. But first wanna check that the songs aren't already in there
+    # sp.user_playlist_add_tracks(
+    #     user_id, saved_weekly_playlist_id, song_uris, None)
     # print("OAUTH Successful")
-    # Made it so that it displays the songs that were added for the week.
     # return (songs_added_this_week)
-    # return ("OAUTH Successful")
+    # # return ("Songs were already added this week")
 
 
 def get_token():
