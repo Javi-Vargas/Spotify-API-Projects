@@ -97,16 +97,22 @@ def save_discover_weekly():
     for song in discover_weekly_playlist['items']:
         song_uri = song['track']['uri']
         song_uris.append(song_uri)
-        songs_added_this_week.append(song['track']['name'])
+        songs_added_this_week.append(
+            song['track']['name'] + ", " + song['track']['artists'][0]['name'])  # put brackets around the statement in the parenthases to have it be more spaced out on the screen
+        # songs_added_this_week.append(song['track']['name'])
 
     if not song_already_in_playlist(saved_weekly_playlist, song_uris):
         sp.user_playlist_add_tracks(
             user_id, saved_weekly_playlist_id, song_uris, None)
+        print("OAuth Successful")
         print("This week's songs were added!")
+        return (songs_added_this_week)
     else:
+        print("OAuth Successful")
         print("Some or all of these songs were already in the playlist.")
-    print("OAuth Successful")
-    return (songs_added_this_week)
+
+    return songs_added_this_week
+
     # # add them to Saved weekly. But first wanna check that the songs aren't already in there
     # sp.user_playlist_add_tracks(
     #     user_id, saved_weekly_playlist_id, song_uris, None)
